@@ -8,20 +8,20 @@ function Decoder(bytes, port) {
   var length   = v4.length;
   var battery; var Tamper; var Valve; var status_v4; var Cable_v4; var conf_p;var conf_s; var unit1; var time1;
   var unit2; var time2; var temperature; var hygrometry; var status; var DI_0; var DI_1; var Leakage; var Fraud;
-  var clas; var power;
-   // Battery operated V3 
+  var clas; var power; var t; var t1;
+    // Battery operated V3 Old
   if (v4_3 == "3"){
-  var msg      = String.fromCharCode.apply(null, bytes);
-  var bat      = msg.substr(0,4);
-  battery      = Math.round((bat-2000)/16);
+  var msg0      = String.fromCharCode.apply(null, bytes);
+  var bat0      = msg0.substr(0,4);
+  battery      = Math.round((bat0-2000)/16);
   if (length == 10){
-  var st       = msg.substr(4,1);
-  var sta      = dec_to_bho(st,'B');
-  status       = pad(sta,8);
+  var st0       = msg0.substr(4,1);
+  var sta0      = dec_to_bho(st0,'B');
+  status       = pad(sta0,8);
   Valve        = status.substr(7,1);
   Tamper       = status.substr(6,1);
   }}
-  // Battery operated V3 & V4 & Class A
+   // Battery operated V3 & V4 & Class A
   if (v4_3 == "3"){
   var msg      = String.fromCharCode.apply(null, bytes);
   var bat      = msg.substr(0,4);
@@ -33,7 +33,10 @@ function Decoder(bytes, port) {
   Valve        = status.substr(7,1);
   Tamper       = status.substr(6,1);
   }
-  var st1      = v4.substr(8,2);
+  var st_1     = v4.substr(8,2);
+  t            = st_1.substr(0,1)-3;
+  t1           = st_1.substr(1,1);
+  var st1      = t+t1;
   var st01     = hex2bin(st1);
   status       = pad(st01,8);
   Valve        = status.substr(7,1);
@@ -63,7 +66,10 @@ function Decoder(bytes, port) {
   var st2      = hex2bin(v4_2);
   clas         = st2.substr(0,1);
   power        = st2.substr(1,1);
-  var st3      = v4.substr(8,2);
+  var st_3     = v4.substr(8,2);
+  t            = st_3.substr(0,1)-3;
+  t1           = st_3.substr(1,1);
+  var st3      = t+t1;
   var st02     = hex2bin(st3);
   status       = pad(st02,8);
   Valve        = status.substr(7,1);
@@ -97,7 +103,10 @@ function Decoder(bytes, port) {
   var b1       = msg2.substr(2,3);
   var bat1     = b.concat(b1);
   battery      = Math.round((bat1-2000)/16);
-  var st5      = v4.substr(8,2);
+  var st_5     = v4.substr(8,2);
+  t            = st_5.substr(0,1)-3;
+  t1           = st_5.substr(1,1);
+  var st5      = t+t1;
   var st03     = hex2bin(st5);
   status       = pad(st03,8);
   Valve        = status.substr(7,1);
@@ -270,6 +279,5 @@ if (conf_p===14 || conf_p===15 || conf_p===16 || conf_p===17 || conf_p===18 || c
       Battery: battery,
       Valve: Valve,
       Tamper: Tamper,
-      test : conf_p
   };}
   }
