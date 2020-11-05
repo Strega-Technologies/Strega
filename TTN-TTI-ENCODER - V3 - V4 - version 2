@@ -24,6 +24,14 @@ default:
 return("Wrong input.........");}}
  var bytes = [];
  var ne =[];
+ var d1 = new Date();
+ var targetTime = new Date(d1);
+ // the following line describe the exact time at your location that maybe different from the time of the LNS. Set the number of hours (+/-) according to your time zone compared to GMT
+ var timeZoneFromDB = +4.00; //time zone value from database
+ //convert the offset to milliseconds, add to targetTime, and make a new Date
+ var tzDifference = timeZoneFromDB * 60 + targetTime.getTimezoneOffset();
+ var offsetTime = new Date(targetTime.getTime() + tzDifference * 60 * 1000);
+ var d = offsetTime;
  var ports = port;
  var Schl_on = 10;
  var Schl_off = 00;
@@ -74,21 +82,34 @@ return("Wrong input.........");}}
  return bytes;
  }
  if (port === 12){
-  var t0 = object.Sync_RTC;
-  bytes[0] = parseInt(t0.substr(0,1));
-  bytes[1] = parseInt(t0.substr(1,1));
-  bytes[2] = parseInt(t0.substr(2,1));
-  bytes[3] = parseInt(t0.substr(3,1));
-  bytes[4] = parseInt(t0.substr(4,1));
-  bytes[5] = parseInt(t0.substr(5,1));
-  bytes[6] = parseInt(t0.substr(6,1));
-  bytes[7] = parseInt(t0.substr(7,1));
-  bytes[8] = parseInt(t0.substr(8,1));
-  bytes[9] = parseInt(t0.substr(9,1));
-  bytes[10] = parseInt(t0.substr(10,1));
-  bytes[11] = parseInt(t0.substr(11,1));
-  bytes[12] = parseInt(t0.substr(12,1));
-  bytes[13] = parseInt(t0.substr(13,1));
+  var hours = d.getHours();
+  var h     = pad(hours,2);
+  bytes[0]  = parseInt(h.substr(0,1));
+  bytes[1]  = parseInt(h.substr(1,1));
+  var mins  = d.getMinutes();
+  var m     = pad(mins,2);
+  bytes[2]  = parseInt(m.substr(0,1));
+  bytes[3]  = parseInt(m.substr(1,1));
+  var sec   = d.getSeconds();
+  var s     = pad(sec,2);
+  bytes[4]  = parseInt(s.substr(0,1));
+  bytes[5]  = parseInt(s.substr(1,1));
+  var day   = d.getDay();
+  var d1    = pad(day,2);
+  bytes[6]  = parseInt(d1.substr(0,1));
+  bytes[7]  = parseInt(d1.substr(1,1));
+  var date  = d.getDate();
+  var d2    = pad(date,2);
+  bytes[8]  = parseInt(d2.substr(0,1));
+  bytes[9]  = parseInt(d2.substr(1,1));
+  var month = d.getMonth()+1;
+  var m1    = pad(month,2);
+  bytes[10] = parseInt(m1.substr(0,1));
+  bytes[11] = parseInt(m1.substr(1,1));
+  var year  = d.getFullYear().toString().substr(2, 2);
+  var y     = pad(year,2);
+  bytes[12] = parseInt(y.substr(0,1));
+  bytes[13] = parseInt(y.substr(1,1));
   return bytes;
  }
 // Schedulers setting
