@@ -40,20 +40,22 @@ return("Wrong input.........");}}
  if (port === 1) {
  bytes[0] = object.payload;
  bytes[1] = 48;
-  ne[0]    = bytes[1]+bytes[0];
+ ne[0]    = bytes[1]+bytes[0];
  return ne;
  }
-// Changing the class
+// Changing the class, A or C
  if (port === 9){
   bytes[0] = object.payload;
   return bytes;
  }
-// Magnetic control
- if (port === 22){
-  bytes[0] = object.payload;
-  bytes[1] = 48;
-  ne[0]    = bytes[1]+bytes[0];
- return ne;
+// Radio configuration setting
+ if (port === 10){
+  var ADR   = dec_to_bho(object.ADR,'B');
+  var DR    = pad1(dec_to_bho(object.DR,'B'),3);
+  var SF    = pad2(dec_to_bho(object.SF,'B'),4);
+  var radio = parseInt((ADR+DR+SF),2);
+  bytes[0]  = radio;
+  return bytes;
  }
 // UL frequency time
  if (port === 11){
@@ -69,18 +71,7 @@ return("Wrong input.........");}}
  bytes[3] = object.time2;
  return bytes;
  }
-// Schedulers status setting
- if (port === 21){
-  bytes[0] = object.Schl_status;
-  bytes[1] = 48;
-  ne[0]    = bytes[1]+bytes[0];
- return ne;
- } 
-// Synchronizing RTC 
- if (port === 13){
-  bytes[0] = object.Sync_RTC;
- return bytes;
- }
+//Time Synchronization 
  if (port === 12){
   var hours = d.getHours();
   var h     = pad(hours,2);
@@ -111,6 +102,11 @@ return("Wrong input.........");}}
   bytes[12] = parseInt(y.substr(0,1));
   bytes[13] = parseInt(y.substr(1,1));
   return bytes;
+ }
+// Time Synchronization Request
+ if (port === 13){
+  bytes[0] = object.Sync_RTC;
+ return bytes;
  }
 // Schedulers setting
  if (port===14 || port===15 || port===16 || port===17 || port===18 || port===19 || port===20) {
@@ -299,4 +295,18 @@ return("Wrong input.........");}}
  var g15 = parseInt((Schl_m+e15+f15),2);
  bytes[23] = g15;}
 return bytes;
-}}
+}
+// Schedulers status setting
+ if (port === 21){
+  bytes[0] = object.Schl_status;
+  bytes[1] = 48;
+  ne[0]    = bytes[1]+bytes[0];
+ return ne;
+ } 
+// Magnetic control
+ if (port === 22){
+  bytes[0] = object.payload;
+  bytes[1] = 48;
+  ne[0]    = bytes[1]+bytes[0];
+ return ne;
+ }}
