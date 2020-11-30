@@ -1,3 +1,4 @@
+// Encoder Rev6 updated on 30 Nov 2020
 function Encoder(object, port) {
  function pad0(num, len) { 
  return ("30" + num).substr(-len);}
@@ -7,6 +8,8 @@ function Encoder(object, port) {
  return ("000" + num).substr(-len);}
  function pad2(num, len) {
  return ("0000" + num).substr(-len);}
+ function pad3(num, len) {
+ return ("000000000000000000000000" + num).substr(-len);}
  function dec_to_bho (n, base) {
  if (n < 0) {
  n = 0xFFFFFFFF + n + 1;}
@@ -43,12 +46,12 @@ return("Wrong input.........");}}
  ne[0]    = bytes[1]+bytes[0];
  return ne;
  }
-// Changing the class, A or C
+// Changing the class
  if (port === 9){
   bytes[0] = object.payload;
   return bytes;
  }
-// Radio configuration setting
+// Radio setting
  if (port === 10){
   var ADR   = dec_to_bho(object.ADR,'B');
   var DR    = pad1(dec_to_bho(object.DR,'B'),3);
@@ -305,6 +308,31 @@ return bytes;
  } 
 // Magnetic control
  if (port === 22){
+  bytes[0] = object.payload;
+  bytes[1] = 48;
+  ne[0]    = bytes[1]+bytes[0];
+ return ne;
+ }
+// Setting your Counter value
+ if (port === 23){
+  var counter = pad3(dec_to_bho (object.payload,'B'),24);
+  var byte1   = counter.substr(0,8);
+  var byte2   = counter.substr(8,8);
+  var byte3   = counter.substr(16,8);
+  bytes[0]    = parseInt(byte1,2);
+  bytes[1]    = parseInt(byte2,2);
+  bytes[2]    = parseInt(byte3,2);
+ return bytes;
+ }
+// Counter value retrieval
+ if (port === 24){
+  bytes[0] = object.payload;
+  bytes[1] = 48;
+  ne[0]    = bytes[1]+bytes[0];
+ return ne;
+ }
+// Analog value retrieval
+ if (port === 25){
   bytes[0] = object.payload;
   bytes[1] = 48;
   ne[0]    = bytes[1]+bytes[0];
