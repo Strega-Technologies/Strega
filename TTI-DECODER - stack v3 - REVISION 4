@@ -1,4 +1,4 @@
-//Decoder Rev2 updated on 24th Nov 2020
+//Decoder Rev3 updated on 3rd Dec 2020
 function Decoder(bytes, f_port) {
   var ports    = f_port;
   var v4       = toHexString(bytes);
@@ -17,7 +17,7 @@ function Decoder(bytes, f_port) {
   var unit2; var time2; var temperature; var hygrometry; var DI_0; var DI_1; var Leakage; var Fraud;
   var clas; var power; var radio; var ADR; var DR; var SF; var T_H; var temp; var box_temp; var hum;
   var box_hum; var analog; var counter; var msg; var C; var V; var C_A; var msg1; var st; var st1; var st2;
-  var counter_A; var analog_A;  
+  var st_0; var st_1; var st_2; var counter_A; var analog_A;  
   // Battery operated V3 & V4 & Class A with full payload (Tem,Hum,Counter & Analog)
   if (v4_3 == "3"){
   msg          = String.fromCharCode.apply(null, bytes);
@@ -26,7 +26,10 @@ function Decoder(bytes, f_port) {
   power        = st2.substr(1,1);
   var bat      = msg.substr(0,4);
   battery      = Math.round((bat-2000)/16);
-  st           = v4.substr(8,2)-30;
+  st_0         = v4.substr(8,2);
+  st_1         = st_0.substr(0,1)-3; 
+  st_2         = st_0.substr(1,1);
+  st           = st_1+st_2;
   st1          = hex2bin(st);
   status       = pad(st1,8);
   Valve        = status.substr(7,1);
@@ -82,7 +85,10 @@ function Decoder(bytes, f_port) {
   st2          = hex2bin(v4_2);
   clas         = st2.substr(0,1);
   power        = st2.substr(1,1);
-  st           = v4.substr(8,2)-30;
+  st_0         = v4.substr(8,2);
+  st_1         = st_0.substr(0,1)-3; 
+  st_2         = st_0.substr(1,1);
+  st           = st_1+st_2;
   st1          = hex2bin(st);
   status       = pad(st1,8);
   Valve        = status.substr(7,1);
@@ -142,7 +148,10 @@ function Decoder(bytes, f_port) {
   var b1       = msg.substr(1,3);
   var bat1     = b.concat(b1);
   battery      = Math.round((bat1-2000)/16);
-  st           = v4.substr(8,2)-30;
+  st_0         = v4.substr(8,2);
+  st_1         = st_0.substr(0,1)-3; 
+  st_2         = st_0.substr(1,1);
+  st           = st_1+st_2;
   st1          = hex2bin(st);
   status       = pad(st1,8);
   Valve        = status.substr(7,1);
