@@ -1,15 +1,15 @@
-// Encode encodes the given object into an array of bytes.
-//  - fPort contains the LoRaWAN fPort number
-//  - obj is an object, e.g. {"temperature": 22.5}
-//  - variables contains the device variables e.g. {"calibration": "3.5"} (both the key / value are of type string)
-// The function must return an array of bytes, e.g. [225, 230, 255, 0]
+// Encoder full edition updated on 16th Jan 2021
 function Encode(fPort, obj) {
+ function pad0(num, len) { 
+ return ("30" + num).substr(-len);}
  function pad(num, len) {
  return ("00" + num).substr(-len);}
  function pad1(num, len) {
  return ("000" + num).substr(-len);}
  function pad2(num, len) {
  return ("0000" + num).substr(-len);}
+ function pad3(num, len) {
+ return ("000000000000000000000000" + num).substr(-len);}
  function dec_to_bho (n, base) {
  if (n < 0) {
  n = 0xFFFFFFFF + n + 1;}
@@ -26,7 +26,15 @@ break;
 default:
 return("Wrong input.........");}}
  var bytes = [];
- var ne = [];
+ var ne =[];
+ var d1 = new Date();
+ var targetTime = new Date(d1);
+ // the following line describe the exact time at your location that maybe different from the time of the LNS. Set the number of hours (+/-) according to your time zone compared to GMT
+ var timeZoneFromDB = +4.00; //time zone value from database
+ //convert the offset to milliseconds, add to targetTime, and make a new Date
+ var tzDifference = timeZoneFromDB * 60 + targetTime.getTimezoneOffset();
+ var offsetTime = new Date(targetTime.getTime() + tzDifference * 60 * 1000);
+ var d = offsetTime;
  var ports = fPort;
  var Schl_on = 10;
  var Schl_off = 00;
@@ -43,12 +51,14 @@ return("Wrong input.........");}}
   bytes[0] = obj.payload;
   return bytes;
  }
-// Magnetic control
- if (ports === 22){
-  bytes[0] = obj.payload;
-  bytes[1] = 48;
-  ne[0]    = bytes[1]+bytes[0];
- return ne;
+// Radio setting
+ if (ports === 10){
+  var ADR   = dec_to_bho(obj.ADR,'B');
+  var DR    = pad1(dec_to_bho(obj.DR,'B'),3);
+  var SF    = pad2(dec_to_bho(obj.SF,'B'),4);
+  var radio = parseInt((ADR+DR+SF),2);
+  bytes[0]  = radio;
+  return bytes;
  }
 // UL frequency time
  if (ports === 11){
@@ -64,35 +74,42 @@ return("Wrong input.........");}}
  bytes[3] = obj.time2;
  return bytes;
  }
-// Schedulers status setting
- if (ports === 21){
-  bytes[0] = obj.Schl_status;
-  bytes[1] = 48;
-  ne[0]    = bytes[1]+bytes[0];
- return ne;
- } 
-// Synchronizing RTC 
+//Time Synchronization 
+ if (ports === 12){
+  var hours = d.getHours();
+  var h     = pad(hours,2);
+  bytes[0]  = parseInt(h.substr(0,1));
+  bytes[1]  = parseInt(h.substr(1,1));
+  var mins  = d.getMinutes();
+  var m     = pad(mins,2);
+  bytes[2]  = parseInt(m.substr(0,1));
+  bytes[3]  = parseInt(m.substr(1,1));
+  var sec   = d.getSeconds();
+  var s     = pad(sec,2);
+  bytes[4]  = parseInt(s.substr(0,1));
+  bytes[5]  = parseInt(s.substr(1,1));
+  var day   = d.getDay();
+  var d1    = pad(day,2);
+  bytes[6]  = parseInt(d1.substr(0,1));
+  bytes[7]  = parseInt(d1.substr(1,1));
+  var date  = d.getDate();
+  var d2    = pad(date,2);
+  bytes[8]  = parseInt(d2.substr(0,1));
+  bytes[9]  = parseInt(d2.substr(1,1));
+  var month = d.getMonth()+1;
+  var m1    = pad(month,2);
+  bytes[10] = parseInt(m1.substr(0,1));
+  bytes[11] = parseInt(m1.substr(1,1));
+  var year  = d.getFullYear().toString().substr(2, 2);
+  var y     = pad(year,2);
+  bytes[12] = parseInt(y.substr(0,1));
+  bytes[13] = parseInt(y.substr(1,1));
+  return bytes;
+ }
+// Time Synchronization Request
  if (ports === 13){
   bytes[0] = obj.Sync_RTC;
  return bytes;
- }
- if (ports === 12){
-  var t0 = obj.Sync_RTC;
-  bytes[0] = parseInt(t0.substr(0,1));
-  bytes[1] = parseInt(t0.substr(1,1));
-  bytes[2] = parseInt(t0.substr(2,1));
-  bytes[3] = parseInt(t0.substr(3,1));
-  bytes[4] = parseInt(t0.substr(4,1));
-  bytes[5] = parseInt(t0.substr(5,1));
-  bytes[6] = parseInt(t0.substr(6,1));
-  bytes[7] = parseInt(t0.substr(7,1));
-  bytes[8] = parseInt(t0.substr(8,1));
-  bytes[9] = parseInt(t0.substr(9,1));
-  bytes[10] = parseInt(t0.substr(10,1));
-  bytes[11] = parseInt(t0.substr(11,1));
-  bytes[12] = parseInt(t0.substr(12,1));
-  bytes[13] = parseInt(t0.substr(13,1));
-  return bytes;
  }
 // Schedulers setting
  if (ports===14 || ports===15 || ports===16 || ports===17 || ports===18 || ports===19 || ports===20) {
@@ -281,4 +298,43 @@ return("Wrong input.........");}}
  var g15 = parseInt((Schl_m+e15+f15),2);
  bytes[23] = g15;}
 return bytes;
-}}
+}
+// Schedulers status setting
+ if (ports === 21){
+  bytes[0] = obj.Schl_status;
+  bytes[1] = 48;
+  ne[0]    = bytes[1]+bytes[0];
+ return ne;
+ } 
+// Magnetic control
+ if (ports === 22){
+  bytes[0] = obj.payload;
+  bytes[1] = 48;
+  ne[0]    = bytes[1]+bytes[0];
+ return ne;
+ }
+// Setting your Counter value
+ if (ports === 23){
+  var counter = pad3(dec_to_bho (obj.payload,'B'),24);
+  var byte1   = counter.substr(0,8);
+  var byte2   = counter.substr(8,8);
+  var byte3   = counter.substr(16,8);
+  bytes[0]    = parseInt(byte1,2);
+  bytes[1]    = parseInt(byte2,2);
+  bytes[2]    = parseInt(byte3,2);
+ return bytes;
+ }
+// Counter value retrieval
+ if (ports === 24){
+  bytes[0] = obj.payload;
+  bytes[1] = 48;
+  ne[0]    = bytes[1]+bytes[0];
+ return ne;
+ }
+// Analog value retrieval
+ if (ports === 25){
+  bytes[0] = obj.payload;
+  bytes[1] = 48;
+  ne[0]    = bytes[1]+bytes[0];
+ return ne;
+ }}
