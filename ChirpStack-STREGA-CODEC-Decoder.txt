@@ -1,4 +1,4 @@
-// Decoder full edition updated on 16th Jan 2021
+// Decoder full edition updated on 24th Jan 2021
 function Decode(fPort, bytes) {
   var ports    = fPort;
   var v4       = toHexString(bytes);
@@ -11,6 +11,7 @@ function Decode(fPort, bytes) {
   var v4_7     = v4.substr(24,2);
   var v4_8     = v4.substr(10,2);
   var v4_9     = v4.substr(20,2);
+  var v4_10    = v4.substr(0,2);
   var v3       = v4.substr(8,1);
   var length   = v4.length;
   var battery; var Tamper; var Valve; var status; var Cable; var conf_p;var conf_s; var unit1; var time1;
@@ -45,10 +46,10 @@ function Decode(fPort, bytes) {
   conf_p       = parseInt(msg1.substr(1,2), 16);
   conf_s       = msg1.substr(3,2);
   unit1        = msg1.substr(3,2);
-  time1        = msg1.substr(5,2);
+  time1        = parseInt(msg1.substr(5,2),16);
   unit2        = msg1.substr(7,2);
-  time2        = msg1.substr(9,2);
-  radio        = pad(hex2bin(msg.substr(3,2)),8);
+  time2        = parseInt(msg1.substr(9,2),16);
+  radio        = pad(hex2bin(msg1.substr(3,2)),8);
   ADR          = parseInt(radio.substr(0,1),2);
   DR           = parseInt(radio.substr(1,3),2);
   SF           = parseInt(radio.substr(4,4),2);
@@ -104,10 +105,10 @@ function Decode(fPort, bytes) {
   conf_p       = parseInt(msg1.substr(1,2), 16);
   conf_s       = msg1.substr(3,2);
   unit1        = msg1.substr(3,2);
-  time1        = msg1.substr(5,2);
+  time1        = parseInt(msg1.substr(5,2),16);
   unit2        = msg1.substr(7,2);
-  time2        = msg1.substr(9,2);
-  radio        = pad(hex2bin(msg.substr(3,2)),8);
+  time2        = parseInt(msg1.substr(9,2),16);
+  radio        = pad(hex2bin(msg1.substr(3,2)),8);
   ADR          = parseInt(radio.substr(0,1),2);
   DR           = parseInt(radio.substr(1,3),2);
   SF           = parseInt(radio.substr(4,4),2);
@@ -167,10 +168,10 @@ function Decode(fPort, bytes) {
   conf_p       = parseInt(msg1.substr(1,2), 16);
   conf_s       = msg1.substr(3,2);
   unit1        = msg1.substr(3,2);
-  time1        = msg1.substr(5,2);
+  time1        = parseInt(msg1.substr(5,2),16);
   unit2        = msg1.substr(7,2);
-  time2        = msg1.substr(9,2);
-  radio        = pad(hex2bin(msg.substr(3,2)),8);
+  time2        = parseInt(msg1.substr(9,2),16);
+  radio        = pad(hex2bin(msg1.substr(3,2)),8);
   ADR          = parseInt(radio.substr(0,1),2);
   DR           = parseInt(radio.substr(1,3),2);
   SF           = parseInt(radio.substr(4,4),2);
@@ -201,6 +202,14 @@ function Decode(fPort, bytes) {
   V            = msg1.search("V");
   analog       = parseInt(msg1.substr(V+1,4),16);
   }}
+  
+  // Counter and Analog Ack frame
+  if (v4_10 == "40"){
+  msg1         = hex2a(v4.substr(0,100));
+  conf_p       = parseInt(msg1.substr(1,2), 16);
+  counter_A    = parseInt(msg1.substr(3,6), 16);
+  analog_A     = parseInt(msg1.substr(3,4), 16);
+  }
   
   function pad(num, len) { 
     return ("00000000" + num).substr(-len);
@@ -417,6 +426,24 @@ if (conf_p===14 || conf_p===15 || conf_p===16 || conf_p===17 || conf_p===18 || c
       Fraud   : Fraud,
       Class   : clas,
       Power   : power,
+      Process : "false",
+      analog_Port   : conf_p || 0,
+      analog_value  : analog_A/1000 || 0,
+  };}}
+  // Ack for counter and analog
+  if (v4_10 === "40"){
+  // Counter value retrieval and counter value setting ack
+  if(conf_p===23 || conf_p===24){
+    return {
+      Port    : ports,
+      Process : "false",
+      counter_Port   : conf_p || 0,
+      counter_value  : counter_A|| 0,
+  };}
+  // Analog value retrieval
+  if(conf_p===25){
+    return {
+      Port    : ports,
       Process : "false",
       analog_Port   : conf_p || 0,
       analog_value  : analog_A/1000 || 0,
