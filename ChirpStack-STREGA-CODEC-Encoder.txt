@@ -1,4 +1,4 @@
-// Encoder full edition updated on 16th Jan 2021
+// Encoder full edition updated on March 19 2021
 function Encode(fPort, obj) {
  function pad0(num, len) { 
  return ("30" + num).substr(-len);}
@@ -35,7 +35,7 @@ return("Wrong input.........");}}
  var tzDifference = timeZoneFromDB * 60 + targetTime.getTimezoneOffset();
  var offsetTime = new Date(targetTime.getTime() + tzDifference * 60 * 1000);
  var d = offsetTime;
- var ports = fPort;
+ var port = fPort;
  var Schl_on = 10;
  var Schl_off = 00;
  var Schl_m = 0;
