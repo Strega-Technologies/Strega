@@ -338,3 +338,4 @@ return bytes;
   ne[0]    = bytes[1]+bytes[0];
  return ne;
  }}
+ 
