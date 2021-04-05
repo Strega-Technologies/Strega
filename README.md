@@ -17,4 +17,4 @@ TTI - Works on the Things Industries Cloud Hosted v3 stack for decoding uplinks
 
 Datacake - Supports uplinks. Tested from TTI v3 app server via HTTP to Datacake
 
-Tektelic: Decoder to be used in the "Data Coverters" section
+Tektelic: Decoder to be used in the "Data Converters" section
