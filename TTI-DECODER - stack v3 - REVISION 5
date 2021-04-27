@@ -1,4 +1,4 @@
-//Decoder Rev4 updated on 24th Jan 2021
+//TTI Decoder updated on April 27, 2021 - Revision 5
 function Decoder(bytes, f_port) {
   var ports    = f_port;
   var v4       = toHexString(bytes);
@@ -18,7 +18,7 @@ function Decoder(bytes, f_port) {
   var unit2; var time2; var temperature; var hygrometry; var DI_0; var DI_1; var Leakage; var Fraud;
   var clas; var power; var radio; var ADR; var DR; var SF; var T_H; var temp; var box_temp; var hum;
   var box_hum; var analog; var counter; var msg; var C; var V; var C_A; var msg1; var st; var st1; var st2;
-  var st_0; var st_1; var st_2; var counter_A; var analog_A;  
+  var st_0; var st_1; var st_2; var counter_A; var analog_A;  var v_t;
   // Battery operated V3 & V4 & Class A with full payload (Tem,Hum,Counter & Analog)
   if (v4_3 == "3"){
   msg          = String.fromCharCode.apply(null, bytes);
@@ -33,6 +33,7 @@ function Decoder(bytes, f_port) {
   st           = st_1+st_2;
   st1          = hex2bin(st);
   status       = pad(st1,8);
+  v_t          = status.substr(6,2);
   Valve        = status.substr(7,1);
   Tamper       = status.substr(6,1);
   Cable        = status.substr(5,1);
@@ -92,6 +93,7 @@ function Decoder(bytes, f_port) {
   st           = st_1+st_2;
   st1          = hex2bin(st);
   status       = pad(st1,8);
+  v_t          = status.substr(6,2);
   Valve        = status.substr(7,1);
   Tamper       = status.substr(6,1);
   Cable        = status.substr(5,1);
@@ -155,6 +157,7 @@ function Decoder(bytes, f_port) {
   st           = st_1+st_2;
   st1          = hex2bin(st);
   status       = pad(st1,8);
+  v_t          = status.substr(6,2);  
   Valve        = status.substr(7,1);
   Tamper       = status.substr(6,1);
   Cable        = status.substr(5,1);
@@ -276,6 +279,7 @@ if (v4_1==="40"){
       Fraud   : Fraud,
       Class   : clas,
       Power   : power,
+      v_t     : v_t,
       Process : "false",
       Class_Port   : conf_p || 0,
       Class_status : conf_s || 0,
@@ -294,6 +298,7 @@ if (v4_1==="40"){
       Fraud   : Fraud,
       Class   : clas,
       Power   : power,
+      v_t     : v_t,
       Process : "false",
       ADR     : ADR,
       DR      : DR,
@@ -315,6 +320,7 @@ if (v4_1==="40"){
       Fraud   : Fraud,
       Class   : clas,
       Power   : power,
+      v_t     : v_t,
       Process : "false",
       Unit1   : unit1 == "80"? 1:0,
       Time1   : time1,
@@ -336,6 +342,7 @@ if (v4_1==="40"){
       Fraud   : Fraud,
       Class   : clas,
       Power   : power,
+      v_t     : v_t,
       Process : "false",
       RTC_Port   : conf_p || 0,
       RTC_status : conf_s || 0,
@@ -354,6 +361,7 @@ if (conf_p===14 || conf_p===15 || conf_p===16 || conf_p===17 || conf_p===18 || c
       Fraud   : Fraud,
       Class   : clas,
       Power   : power,
+      v_t     : v_t,
       Process : "false",
       Schl_Port   : conf_p || 0,
       Schl_status : conf_s || 0,
@@ -372,6 +380,7 @@ if (conf_p===14 || conf_p===15 || conf_p===16 || conf_p===17 || conf_p===18 || c
       Fraud   : Fraud,
       Class   : clas,
       Power   : power,
+      v_t     : v_t,
       Process : "false",
       Schl_status_Port : conf_p || 0,
       Schl_status_ack  : conf_s || 0,
@@ -390,6 +399,7 @@ if (conf_p===14 || conf_p===15 || conf_p===16 || conf_p===17 || conf_p===18 || c
       Fraud   : Fraud,
       Class   : clas,
       Power   : power,
+      v_t     : v_t,
       Process : "false",
       magnet_Port   : conf_p || 0,
       magnet_status : conf_s || 0,
@@ -408,6 +418,7 @@ if (conf_p===14 || conf_p===15 || conf_p===16 || conf_p===17 || conf_p===18 || c
       Fraud   : Fraud,
       Class   : clas,
       Power   : power,
+      v_t     : v_t,
       Process : "false",
       counter_Port   : conf_p || 0,
       counter_value  : counter_A|| 0,
@@ -426,6 +437,7 @@ if (conf_p===14 || conf_p===15 || conf_p===16 || conf_p===17 || conf_p===18 || c
       Fraud   : Fraud,
       Class   : clas,
       Power   : power,
+      v_t     : v_t,
       Process : "false",
       analog_Port   : conf_p || 0,
       analog_value  : analog_A/1000 || 0,
@@ -465,6 +477,7 @@ if (conf_p===14 || conf_p===15 || conf_p===16 || conf_p===17 || conf_p===18 || c
       Fraud   : Fraud,
       Class   : clas,
       Power   : power,
+      v_t     : v_t,
       Process : "true",
       Temperature  : roundToTwo(temperature),
       Hygrometry   : roundToTwo(hygrometry),
@@ -484,6 +497,7 @@ if (conf_p===14 || conf_p===15 || conf_p===16 || conf_p===17 || conf_p===18 || c
       Fraud   : Fraud,
       Class   : clas,
       Power   : power,
+      v_t     : v_t,
       Process : "true",
       Counter : counter,
       Analog_value : analog/1000,
@@ -505,6 +519,7 @@ if (conf_p===14 || conf_p===15 || conf_p===16 || conf_p===17 || conf_p===18 || c
       Fraud   : Fraud,
       Class   : clas,
       Power   : power,
+      v_t     : v_t,
       Process : "true",
       Counter : counter,
       Temperature  : roundToTwo(temperature),
@@ -525,6 +540,7 @@ if (conf_p===14 || conf_p===15 || conf_p===16 || conf_p===17 || conf_p===18 || c
       Fraud   : Fraud,
       Class   : clas,
       Power   : power,
+      v_t     : v_t,
       Process : "true",
       Analog_value : analog/1000,
       Temperature  : roundToTwo(temperature),
@@ -545,6 +561,7 @@ if (conf_p===14 || conf_p===15 || conf_p===16 || conf_p===17 || conf_p===18 || c
       Fraud   : Fraud,
       Class   : clas,
       Power   : power,
+      v_t     : v_t,
       Process : "true",
       Counter : counter,
       Analog_value : analog/1000,
@@ -564,6 +581,7 @@ if (conf_p===14 || conf_p===15 || conf_p===16 || conf_p===17 || conf_p===18 || c
       Fraud   : Fraud,
       Class   : clas,
       Power   : power,
+      v_t     : v_t,
       Process : "true",
       Counter : counter,
   };}
@@ -582,6 +600,7 @@ if (conf_p===14 || conf_p===15 || conf_p===16 || conf_p===17 || conf_p===18 || c
       Fraud   : Fraud,
       Class   : clas,
       Power   : power,
+      v_t     : v_t,
       Process : "true",
       Analog_value : analog/1000,
      };}
@@ -600,5 +619,6 @@ if (conf_p===14 || conf_p===15 || conf_p===16 || conf_p===17 || conf_p===18 || c
       Fraud   : Fraud,
       Class   : clas,
       Power   : power,
+      v_t     : v_t,
       Process : "true",
   };}}
