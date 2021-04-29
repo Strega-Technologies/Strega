@@ -90,7 +90,7 @@ for (var i = 0; i < bytes.length; ++i) {
   var unit2; var time2; var temperature; var hygrometry; var DI_0; var DI_1; var Leakage; var Fraud;
   var clas; var power; var radio; var ADR; var DR; var SF; var T_H; var temp; var box_temp; var hum;
   var box_hum; var analog; var counter; var msg; var C; var V; var C_A; var msg1; var st; var st1; var st2; var st_0; var st_1;
-  var st_2; var counter_A; var analog_A;
+  var st_2; var counter_A; var analog_A; var v_t;
   
 // Battery operated V3 & V4 & Class A with full payload (Tem,Hum,Counter & Analog)
   if (v4_3 == "3"){
@@ -106,6 +106,7 @@ for (var i = 0; i < bytes.length; ++i) {
   st           = st_1+st_2;
   st1          = hex2bin(st);
   status       = pad(st1,8);
+  v_t          = status.substr(6,2);
   Valve        = status.substr(7,1);
   Tamper       = status.substr(6,1);
   Cable        = status.substr(5,1);
@@ -166,6 +167,7 @@ for (var i = 0; i < bytes.length; ++i) {
   st           = st_1+st_2;
   st1          = hex2bin(st);
   status       = pad(st1,8);
+  v_t          = status.substr(6,2);
   Valve        = status.substr(7,1);
   Tamper       = status.substr(6,1);
   Cable        = status.substr(5,1);
@@ -231,6 +233,7 @@ for (var i = 0; i < bytes.length; ++i) {
   st1          = hex2bin(st);
   status       = pad(st1,8);
   Valve        = status.substr(7,1);
+  v_t          = status.substr(6,2);
   Tamper       = status.substr(6,1);
   Cable        = status.substr(5,1);
   DI_0         = status.substr(4,1);
@@ -313,6 +316,7 @@ if (v4_1==="40"){ // acknowledgement uplinks
       Port    : ports,
       Battery : battery,
       Valve   : Valve,
+      v_t     : v_t,
       Tamper  : Tamper,
       Cable   : Cable,
       DI_0    : DI_0,
@@ -335,6 +339,7 @@ if (v4_1==="40"){ // acknowledgement uplinks
       Port    : ports,
       Battery : battery,
       Valve   : Valve,
+      v_t     : v_t,
       Tamper  : Tamper,
       Cable   : Cable,
       DI_0    : DI_0,
@@ -357,6 +362,7 @@ if (v4_1==="40"){ // acknowledgement uplinks
       Port    : ports,
       Battery : battery,
       Valve   : Valve,
+      v_t     : v_t,
       Tamper  : Tamper,
       Cable   : Cable,
       DI_0    : DI_0,
@@ -376,6 +382,7 @@ if (v4_1==="40"){ // acknowledgement uplinks
       Port    : ports,
       Battery : battery,
       Valve   : Valve,
+      v_t     : v_t,
       Tamper  : Tamper,
       Cable   : Cable,
       DI_0    : DI_0,
@@ -395,6 +402,7 @@ if (v4_1==="40"){ // acknowledgement uplinks
       Port    : ports,
       Battery : battery,
       Valve   : Valve,
+      v_t     : v_t,
       Tamper  : Tamper,
       Cable   : Cable,
       DI_0    : DI_0,
@@ -414,6 +422,7 @@ if (v4_1==="40"){ // acknowledgement uplinks
       Port    : ports,
       Battery : battery,
       Valve   : Valve,
+      v_t     : v_t,
       Tamper  : Tamper,
       Cable   : Cable,
       DI_0    : DI_0,
@@ -433,6 +442,7 @@ if (v4_1==="40"){ // acknowledgement uplinks
       Port    : ports,
       Battery : battery,
       Valve   : Valve,
+      v_t     : v_t,
       Tamper  : Tamper,
       Cable   : Cable,
       DI_0    : DI_0,
@@ -452,6 +462,7 @@ if (v4_1==="40"){ // acknowledgement uplinks
       Port    : ports,
       Battery : battery,
       Valve   : Valve,
+      v_t     : v_t,
       Tamper  : Tamper,
       Cable   : Cable,
       DI_0    : DI_0,
@@ -493,6 +504,7 @@ if(v4_1==="23" && v4_4!="43" && v4_5!="56" && v4_6!="43" && v4_7!="56" && v4_8!=
       Status  : status,
       Battery : battery,
       Valve   : Valve,
+      v_t     : v_t,
       Tamper  : Tamper,
       Cable   : Cable,
       DI_0    : DI_0,
@@ -513,6 +525,7 @@ if(v4_1==="23" && v4_4==="43" && v4_5==="56" && v4_6!="43" && v4_7!="56" && v4_8
       Status  : status,
       Battery : battery,
       Valve   : Valve,
+      v_t     : v_t,
       Tamper  : Tamper,
       Cable   : Cable,
       DI_0    : DI_0,
@@ -534,6 +547,7 @@ if(v4_1==="23" && v4_4==="43" && v4_5!="56" && v4_6!="43" && v4_7!="56" && v4_8!
       Port    : ports,
       Status  : status,
       Battery : battery,
+      v_t     : v_t,
       Valve   : Valve,
       Tamper  : Tamper,
       Cable   : Cable,
@@ -556,6 +570,7 @@ if(v4_1==="23" && v4_9==="56" && v4_4!="43" && v4_5!="56" && v4_6!="43" && v4_7!
       Status  : status,
       Battery : battery,
       Valve   : Valve,
+      v_t     : v_t,
       Tamper  : Tamper,
       Cable   : Cable,
       DI_0    : DI_0,
@@ -576,6 +591,7 @@ if(v4_6==="43" && v4_7==="56" && v4_1!="23" && v4_4!="43" && v4_5!="56" && v4_8!
       Port    : ports,
       Status  : status,
       Battery : battery,
+      v_t     : v_t,
       Valve   : Valve,
       Tamper  : Tamper,
       Cable   : Cable,
@@ -597,6 +613,7 @@ if(v4_6==="43" && v4_7!="56" && v4_1!="23" && v4_4!="43" && v4_5!="56" && v4_8!=
       Status  : status,
       Battery : battery,
       Valve   : Valve,
+      v_t     : v_t,
       Tamper  : Tamper,
       Cable   : Cable,
       DI_0    : DI_0,
@@ -616,6 +633,7 @@ if(v4_8==="56" && v4_9==="56" && v4_1!="23" && v4_4!="43" && v4_5!="56" && v4_6!
       Status  : status,
       Battery : battery,
       Valve   : Valve,
+      v_t     : v_t,
       Tamper  : Tamper,
       Cable   : Cable,
       DI_0    : DI_0,
@@ -641,6 +659,7 @@ else {
       DI_1    : DI_1,
       Leakage : Leakage,
       Fraud   : Fraud,
+      v_t     : v_t,
       Class   : clas,
       Power   : power,
       Process : "true",
