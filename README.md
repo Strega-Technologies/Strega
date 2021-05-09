@@ -1,20 +1,18 @@
 # Strega
-The Encoder-decoder for STREGA devices is written in JSCRIPT.
-The DECODER and ENCODER are initially made for the TTN and TTI environment
-but can be used on other LNS. 
+The Encoder-decoders for STREGA devices are written in JSCRIPT.
+The DECODERS and ENCODERS work for the entire STREGA devices.
 
-It works for the entire STREGA devices
-
-For ChirpStack users, please use the ChirpStack CODEC encoder and decoder.
+For ChirpStack users, please use the ChirpStack CODECS as encoder and decoder.
 
 We thank Scott Waller from THINGY (www.thingy.us) for providing the ones from TTI-v3-stack and the one for the Datacake
 platform.
 
 Each decoder file notates which LNS it was tested on as they each seem to behave a little different.
-Scott tested each script against Things Network (community), Things Industries Cloud Hosted, Tektelic, and ChirpStack.
+Scott tested each script against The Things Network (community), Things Industries Cloud Hosted, Tektelic-NS, and ChirpStack.
 
-TTI - Works on the Things Industries Cloud Hosted v3 stack for decoding uplinks
+TTI codecs - works on the Things Industries Cloud Hosted v3 stack for decoding uplinks and encoding downlinks 
+**!!! WORKS ALSO FOR _THE THINGS STACK Community edition_ (= TTN-v3) !!!!!**
 
 Datacake - Supports uplinks. Tested from TTI v3 app server via HTTP to Datacake
 
-Tektelic: Decoder to be used in the "Data Converters" section
+Tektelic-NS: Decoder to be used in the "Data Converters" section
