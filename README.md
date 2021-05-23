@@ -11,7 +11,7 @@ Each decoder file notates which LNS it was tested on as they each seem to behave
 Scott tested each script against The Things Network (community), Things Industries Cloud Hosted, Tektelic-NS, and ChirpStack.
 
 TTI codecs - works on the Things Industries Cloud Hosted v3 stack for decoding uplinks and encoding downlinks 
-**!!! WORKS ALSO FOR _THE THINGS STACK Community edition_ (= TTN-v3) !!!!!**
+**!!! IT WILL NOT WORK FOR _THE THINGS STACK Community edition_ (= TTN-v3) as they limit the size of Payload Formatters to 4Kb...!!!!!**
 
 Datacake - Supports uplinks. Tested from TTI v3 app server via HTTP to Datacake
 
