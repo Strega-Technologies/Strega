@@ -1,4 +1,4 @@
-//TTI Decoder updated on April 27, 2021 - Revision 5
+//TTI Decoder updated on May 23, 2021 - Revision 5
 function Decoder(bytes, f_port) {
   var ports    = f_port;
   var v4       = toHexString(bytes);
