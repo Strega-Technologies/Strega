@@ -1,4 +1,4 @@
-# Strega
+# STREGA
 The Encoder-decoders for STREGA devices are written in JSCRIPT.
 The DECODERS and ENCODERS work for the entire STREGA devices.
 
