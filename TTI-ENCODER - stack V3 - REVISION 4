@@ -1,4 +1,4 @@
-//Encoder Rev3 updated on 11-05-2021
+//Encoder Rev3 updated on 23-05-2021
 function encodeDownlink(input) {
  function pad0(num, len) { 
  return ("30" + num).substr(-len);}
