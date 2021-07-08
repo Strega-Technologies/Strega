@@ -1,6 +1,6 @@
 # STREGA
 The Encoder-decoders for STREGA devices are written in JSCRIPT.
-The DECODERS and ENCODERS work for the all types of STREGA devices.
+The DECODERS and ENCODERS work for all types of STREGA devices.
 
 For ChirpStack users, please use the ChirpStack CODECS as encoder and decoder.
 
