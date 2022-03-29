@@ -1,4 +1,4 @@
-// Encoder full edition updated on March 19 2021
+// Encoder full edition updated on 16th Jan 2021
 function Encode(fPort, obj) {
  function pad0(num, len) { 
  return ("30" + num).substr(-len);}
@@ -46,6 +46,18 @@ return("Wrong input.........");}}
  ne[0]    = bytes[1]+bytes[0];
  return ne;
  }
+// Time Controller open/close
+   if(port ==2) {
+   if (input.data.status == 20){ bytes[0] = 32;}
+   if (input.data.status == 21){ bytes[0] = 33;}
+   if (input.data.status == 40){ bytes[0] = 64;}
+   if (input.data.status == 41){ bytes[0] = 65;}
+   if (input.data.status == 80){ bytes[0] = 128;}
+   if (input.data.status == 81){ bytes[0] = 129;}
+   bytes[1] = input.data.time;
+    return {
+       bytes:bytes,
+    }}
 // Changing the class
  if (ports === 9){
   bytes[0] = obj.payload;
