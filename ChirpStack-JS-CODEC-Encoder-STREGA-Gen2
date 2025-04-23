@@ -1,0 +1,329 @@
+// ChirpStack Encoder for SV2 V1.0 - 16/04/2025
+function Encode(fPort, obj) {
+ function pad0(num, len) { 
+ return ("30" + num).substr(-len);}
+ function pad(num, len) {
+ return ("00" + num).substr(-len);}
+ function pad1(num, len) {
+ return ("000" + num).substr(-len);}
+ function pad2(num, len) {
+ return ("0000" + num).substr(-len);}
+ function pad3(num, len) {
+ return ("000000000000000000000000" + num).substr(-len);}
+ function dec_to_bho (n, base) {
+ if (n < 0) {
+ n = 0xFFFFFFFF + n + 1;}
+switch (base){
+case 'B':
+return parseInt(n, 10).toString(2);
+break;
+case 'H':
+return parseInt(n, 10).toString(16);
+break;
+case 'O':
+return parseInt(n, 10).toString(8);
+break;
+default:
+return("Wrong input.........");}}
+
+ var bytes = [];
+ var ne =[];
+ var ports = fPort;
+ 
+// open and close command
+if (ports === 1) {
+ bytes[0]    = 0x30 + obj.State;
+ return bytes;
+}
+// Time Controller open/close
+if(ports === 2) {
+	
+var Period = parseInt(obj.Period, 10) ;
+var State = parseInt(obj.State, 10) ;
+
+var byte1;
+var byte2;
+/*
+"hour":1, 
+"Period":10,
+"State":1
+*/
+
+/*
+"minute":1, 
+"Period":10,
+"State":1
+*/
+
+/*
+"second":1, 
+"Period":10,
+"State":1 
+*/
+
+if (obj.Second!=="None" && obj.Second=== 1 )
+{
+	byte1 = 0x20 + State;
+}
+else if(obj.Minute!=="None" && obj.Minute===1)
+{
+	byte1 = 0x40 + State;
+}
+else if(obj.Hour!=="None" && obj.Hour===1)
+{
+	byte1 = 0x80 + State;
+}
+
+if (Period > 255) 
+{
+	Period = 255;
+}
+
+bytes[0] = byte1;
+bytes[1] = Period;
+   
+return bytes;
+	
+}
+// Changing the class
+if (ports === 9){
+	bytes[0] = obj.CLASS;
+	return bytes;
+}
+// Radio setting
+if (ports === 10){
+	var radio = (0 << 7) + (0 << 6) + (0 << 5) + (obj.CLASS << 4) + (obj.ADR << 3) + obj.DR; 
+	bytes[0]  = radio;
+	return bytes;
+}
+// UL frequency time
+if (ports === 11){
+	if (obj.Unit===1){
+	bytes[0] = 0x80;}
+	else{
+	bytes[0] = 0;}
+
+	bytes[1] = parseInt(obj.Time); //dec_to_bho (obj.Time,'H') ;
+
+return bytes;
+}
+
+// Time Synchronization Request
+if (ports === 13){
+	bytes[0] = obj.Sync_RTC;
+	return bytes;
+}
+
+// Schedulers status setting
+if (ports === 21){
+	bytes[0]    = 0x30 + obj.Sched_status;
+	return bytes;
+} 
+// Magnetic control
+if (ports === 22){
+	bytes[0]    = 0x30 + obj.Magnet;
+	return bytes;
+}
+// Setting your Counter value
+if (ports === 23){
+
+	var counter = parseInt(obj.Write, 10) ;
+	var byte1   = counter & 0xFF;
+	var byte2   = (counter  >> 8 ) & 0xFF ; 
+	var byte3   = (counter >> 16 ) & 0xFF ; 
+	var byte4   = (counter >> 24 ) & 0xFF ; 
+
+	bytes[3]    = parseInt(byte1) ;
+	if (byte2 > 0)
+		bytes[2]    = parseInt(byte2); 
+	if (byte3 > 0)
+		bytes[1]    = parseInt(byte3);
+	if (byte4 > 0)
+		bytes[0]    = parseInt(byte4);
+
+	return bytes;
+}
+// Counter value retrieval
+if (ports === 24){
+	bytes[0]    = 0x30 + obj.Read;
+	return bytes;
+}
+// Partial Opening
+if (ports === 27){
+	 
+	var percent = parseInt(obj.Percent, 10) ;
+	if(percent <= 100)
+	{
+		bytes[1] = parseInt(percent);
+	}
+	else
+		bytes[1] = 0x64; // limite to 100%
+
+	bytes[0] = 0x31;
+
+	return bytes;
+}
+
+// Unsediment Opening
+if (ports === 28){
+	 
+	var percent = parseInt(obj.Percent, 10) ;
+	if(percent <= 100)
+	{
+		bytes[1] = parseInt(percent);
+	}
+	else
+		bytes[1] = 0x64; // limite to 100%
+
+	bytes[0] = 0x31;
+
+	return bytes;
+}
+// Scheduler
+if(ports === 25) {
+
+	/*
+	"Alldays":1, 
+	"Monday":0,  
+	"Tuesday":0, 
+	"Wednesday":0, 
+	"Thursday":0, 
+	"Friday":0, 
+	"Saturday":0, 
+	"Sunday":0,
+	"schl1_h_on":15, 
+	"schl1_m_on":20, 
+	"schl1_h_off":15,
+	"schl1_m_off":30,
+
+	"schl2_h_on" 
+	"schl2_m_on" 
+	"schl2_h_off"
+	"schl2_m_off"
+
+	"schl3_h_on" 
+	"schl3_m_on" 
+	"schl3_h_off"
+	"schl3_m_off"
+
+	"schl4_h_on" 
+	"schl4_m_on" 
+	"schl4_h_off"
+	"schl4_m_off"
+
+	*/
+	var day = 0;
+	day = 0 ;
+
+	if (obj.Alldays === 1 )
+	{
+		day = 0x80;
+	}
+	if(obj.Sunday===1)
+	{
+		day = day + 0x01;
+	}
+	if(obj.Monday===1)
+	{
+		day = day + 0x02;
+	}
+	if(obj.Tuesday===1)
+	{
+		day = day + 0x04;
+	}
+	if(obj.Wednesday===1)
+	{
+		day = day + 0x08;
+	}
+	if(obj.Thursday===1)
+	{
+		day = day + 0x10;
+	}
+	if(obj.Friday===1)
+	{
+		day = day + 0x20;
+	}
+	if(obj.Saturday===1)
+	{
+		day = day + 0x40;
+	}
+	bytes[0] = day;
+
+	// Operating Range 1
+	if (obj.schl1_h_on!=="None" && obj.schl1_h_on < 24 )
+	{
+		bytes[1]  = 0x80 + parseInt(obj.schl1_h_on,16); 
+	} 
+	if (obj.schl1_m_on!=="None" && obj.schl1_m_on < 60 )
+	{
+		bytes[2]= parseInt(obj.schl1_m_on,16);
+	}
+	if (obj.schl1_h_off!=="None" && obj.schl1_h_off < 24 )
+	{
+		bytes[3] = parseInt(obj.schl1_h_off,16);
+	}
+	if (obj.schl1_m_off!=="None" && obj.schl1_m_off < 60 )
+	{
+		bytes[4]= parseInt(obj.schl1_m_off,16);
+	}
+
+	// Operating Range 2
+	if (obj.schl2_h_on!=="None" && obj.schl2_h_on < 24 )
+	{
+		bytes[5]  = 0x80 + parseInt(obj.schl2_h_on,16); 
+	}
+	if (obj.schl2_m_on!=="None" && obj.schl2_m_on < 60 )
+	{
+		bytes[6]= parseInt(obj.schl2_m_on,16);
+	}
+	if (obj.schl2_h_off!=="None" && obj.schl2_h_off < 24 )
+	{
+		bytes[7] = parseInt(obj.schl2_h_off,16);
+	}
+	if (obj.schl2_m_off!=="None" && obj.schl2_m_off < 60 )
+	{
+		bytes[8]= parseInt(obj.schl2_m_off,16);
+	}
+
+	// Operating Range 3
+	if (obj.schl3_h_on!=="None" && obj.schl3_h_on < 24 )
+	{
+		bytes[9]  = 0x80 + parseInt(obj.schl3_h_on,16); 
+	}
+	if (obj.schl3_m_on!=="None" && obj.schl3_m_on < 60 )
+	{
+		bytes[10]= parseInt(obj.schl3_m_on,16);
+	}
+	if (obj.schl3_h_off!=="None" && obj.schl3_h_off < 24 )
+	{
+		bytes[11] = parseInt(obj.schl3_h_off,16);
+	}
+	if (obj.schl3_m_off!=="None" && obj.schl3_m_off < 60 )
+	{
+		bytes[12]= parseInt(obj.schl3_m_off,16);
+	}
+
+	// Operating Range 4
+	if (obj.schl4_h_on!=="None" && obj.schl4_h_on < 24 )
+	{
+		bytes[13]  = 0x80 + parseInt(obj.schl4_h_on,16); 
+	}
+	if (obj.schl4_m_on!=="None" && obj.schl4_m_on < 60 )
+	{
+		bytes[14]= parseInt(obj.schl4_m_on,16);
+	}
+	if (obj.schl4_h_off!=="None" && obj.schl4_h_off < 24 )
+	{
+		bytes[15] = parseInt(obj.schl4_h_off,16);
+	}
+	if (obj.schl4_m_off!=="None" && obj.schl4_m_off < 60 )
+	{
+		bytes[16]= parseInt(obj.schl4_m_off,16);
+	}
+
+	return bytes;
+		
+}
+
+
+}
