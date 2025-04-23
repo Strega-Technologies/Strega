@@ -1,0 +1,221 @@
+// ChirpStack Decoder for SV2 V1.0 - 16/04/2025
+function Decode(fPort, bytes) {
+  var ports    = fPort;
+  
+  var battery; var Valve; var status; var Cable; 
+  var DI_0; var DI_1; var clas; var power;   
+  var counter  = 0;
+  var ack_port = 0;
+  var ack_val  = 0;
+  var ack_mmtype = "ACK ";
+  var payload  = String.fromCharCode.apply(null, bytes); 
+  var payloadHex  = toHexString(bytes);
+  var str_len = payload.length;
+  var batStr ;
+  var ACKStr;
+  var ACKNum;
+  var AckClass 
+  var AckADR
+  var AckDR 
+  
+  battery  = parseInt(payload.substr(0,3), 16);
+  batStr = payload.substr(0,3); 
+  statusVal = hex2bin(payload.substr(3,2) );
+  statusValStr = payload.substr(3,2);
+  statusValDec = parseInt(payload.substr(3,2), 16);  
+  status = pad(statusVal,8); 
+  clas  = (statusValDec >> 7) & 1;
+  power = (statusValDec >> 6) & 1; 
+  DI_1  = (statusValDec >> 5) & 1; 
+  DI_0  = (statusValDec >> 4) & 1; 
+  Cable	= (statusValDec >> 2) & 3; 
+  Valve = statusValDec & 3 ; 
+  ACKStr = payload.substr(5,1);
+  ACKNum=0;
+  
+  if(str_len > 5){
+	  ACKNum = ACKStr.charCodeAt(0);
+	  if(ACKNum == 6){
+		  
+	    ack_port = parseInt(payload.substr(6,2), 16);
+		ack_mmtype = ack_mmtype + ack_port.toString();
+		
+		
+		if(ack_port == 13)
+		{
+			ack_mmtype = "Date Time Update";
+			ack_val  = parseInt(payload.substr(8,2), 16);
+		}
+		else if(ack_port == 24)
+		{
+			counter  = parseInt(payload.substr(8,str_len-8), 16);
+		}
+		else if(ack_port == 10)
+		{
+			//ack_mmtype = "Date Time Update";
+			ack_val  = parseInt(payload.substr(8,2), 16);
+			
+			//var radio = (0 << 7) + (0 << 6) + (0 << 5) + (obj.CLASS << 4) + (obj.ADR << 3) + obj.DR; 	
+			AckClass  = (ack_val >> 4) & 1; 
+			AckADR	= (ack_val >> 3) & 1; 
+			AckDR = ack_val & 7 ; 
+		}
+		else
+		{
+			ack_val  = parseInt(payload.substr(8,2), 16);
+		}
+		
+	  }
+  }
+  
+	/************************************************/
+	/*	Tools functions								*/
+	/************************************************/
+	function pad(num, len) { 
+	return ("00000000" + num).substr(-len);
+	}
+	function roundToTwo(num) {    
+	return +(Math.round(num + "e+2")  + "e-2");
+	}
+	function dec_to_bho (n, base) {
+	 if (n < 0) {
+	  n = 0xFFFFFFFF + n + 1;
+	 } 
+	switch (base)  
+	{  
+	case 'B':  
+	return parseInt(n, 10).toString(2);
+	break;  
+	case 'H':  
+	return parseInt(n, 10).toString(16);
+	break;  
+	case 'O':  
+	return parseInt(n, 10).toString(8);
+	break;  
+	default:  
+	return("Wrong input.........");  
+	}}
+	function ascii_to_hexa(str)
+	  {
+		var arr1 = [];
+		for (var n = 0, l = str.length; n < l; n ++) 
+		 {
+			var hex = Number(str.charCodeAt(n)).toString(16);
+			arr1.push(hex);
+		 }
+		return arr1.join('');
+	   }
+	function toHexString(bytes) {
+		return bytes.map(function(byte) {
+			return ("00" + (byte & 0xFF).toString(16)).slice(-2);
+		  }).join('');
+	}
+	function hex2bin(hex){
+		return ("00000000" + (parseInt(hex, 16)).toString(2)).substr(-8);
+	}
+	function hex2a(hexx) {
+		var hex = hexx.toString();//force conversion
+		var str = '';
+		for (var i = 0; (i < hex.length && hex.substr(i, 2) !== '00'); i += 2)
+			str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+		return str;
+	}
+	/************************************************/
+	/*	End Tools functions		     				*/
+	/************************************************/
+		
+	if(ACKNum == 6){ // If frame contain ACK byte
+	
+		switch (ack_port)  
+		{  
+			case 10:  // RADIO CONFIGURATION port 10
+				return {
+					
+					  MMType  : ack_mmtype,
+					  Payload : payload,
+					  Port    : ports,
+					  Ack_Port : ack_port,
+					  //Status  : status,			
+					  Battery : battery,
+					  Valve   : Valve,
+					  Cable   : Cable,
+					  DI_0_LSO    : DI_0,
+					  DI_1_LSC    : DI_1,
+					  Class   : clas,
+					  Power   : power,
+					  Counter : counter,
+					  Class   :	AckClass,
+					  ADR   :	AckADR,
+					  DR	:	AckDR,					  
+					  Process : "false",
+				  
+			  };
+			break;  
+			
+			case 24:  // Counter reading with port 24
+				return {
+					
+					  MMType  : ack_mmtype,
+					  Payload : payload,
+					  Port    : ports,
+					  Ack_Port : ack_port,
+					  //Status  : status,			
+					  Battery : battery,
+					  Valve   : Valve,
+					  Cable   : Cable,
+					  DI_0_LSO    : DI_0,
+					  DI_1_LSC    : DI_1,
+					  Class   : clas,
+					  Power   : power,
+					  Counter : counter,
+					  Process : "false",
+				  
+			  };
+			break;  
+
+			default:  // Other param
+				return {
+					  MMType  : ack_mmtype,
+					  Payload : payload,
+					  Port    : ports,
+					  Ack_Port : ack_port,
+					  Ack_Value : ack_val,
+					  //Status  : status,			
+					  Battery : battery,
+					  Valve   : Valve,
+					  Cable   : Cable,
+					  DI_0_LSO    : DI_0,
+					  DI_1_LSC    : DI_1,
+					  Class   : clas,
+					  Power   : power,
+					  Process : "false",
+				  };
+		}
+	}
+	else 
+	{   // Standard UPLink
+		return {
+			  MMType  : "PERIODIC UpLink",
+			  Payload : payload,
+			  Port    : ports,
+			  //Status  : status,			
+			  Battery : battery,
+			  Valve   : Valve,
+			  Cable   : Cable,
+			  DI_0_LSO    : DI_0,
+			  DI_1_LSC    : DI_1,
+			  Class   : clas,
+			  Power   : power,
+			  Process : "true",
+		  };
+	}
+  
+}
+  
+  
+  
+
+  
+
+  
+ 
