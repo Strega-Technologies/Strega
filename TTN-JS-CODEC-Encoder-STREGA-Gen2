@@ -1,0 +1,375 @@
+// TTI Encoder for SV2 V1.1 - 16/04/2025
+function encodeDownlink(input) {
+	
+function pad0(num, len) { 
+  return ("30" + num).substr(-len);}
+function pad(num, len) {
+  return ("00" + num).substr(-len);}
+function pad1(num, len) {
+  return ("000" + num).substr(-len);}
+function pad2(num, len) {
+  return ("0000" + num).substr(-len);}
+function pad3(num, len) {
+  return ("000000000000000000000000" + num).substr(-len);}
+function dec_to_bho (n, base) {
+  if (n < 0) {
+  n = 0xFFFFFFFF + n + 1;}
+  switch (base){
+  case 'B':
+  return parseInt(n, 10).toString(2);
+  //break;
+  case 'H':
+  return parseInt(n, 10).toString(16);
+  //break;
+  case 'O':
+  return parseInt(n, 10).toString(8);
+  //break;
+  default:
+  return("Wrong input.........");}}
+
+var bytes = [];
+var ne =[];
+var port = input.fPort;
+var byte1;
+var byte2;
+var byte3;
+var byte4;
+var percent;
+
+// open and close command
+if (port == 1){
+  bytes[0]    = 0x30 + input.data.State;
+  return {
+    bytes:bytes,
+    fport : port,
+  }
+}
+// Time Controller open/close
+if(port == 2){
+	
+  var Period = parseInt(input.data.Period, 10) ;
+  var State = parseInt(input.data.State, 10) ;
+  
+  /*
+  "hour":1, 
+  "Period":10,
+  "State":1
+  */
+  
+  /*
+  "minute":1, 
+  "Period":10,
+  "State":1
+  */
+  
+  /*
+  "second":1, 
+  "Period":10,
+  "State":1 
+  */
+  
+  if (input.data.Second!=="None" && input.data.Second== 1 )
+  {
+    byte1 = 0x20 + State;
+  }
+  else if(input.data.Minute!=="None" && input.data.Minute==1)
+  {
+  	byte1 = 0x40 + State;
+  }
+  else if(input.data.Hour!=="None" && input.data.Hour==1)
+  {
+  	byte1 = 0x80 + State;
+  }
+  
+  if (Period > 255) 
+  {
+  	Period = 255;
+  }
+  
+  bytes[0] = byte1;
+  bytes[1] = Period;
+   
+  return {
+      bytes:bytes,
+      fport : port,
+  }
+}
+// Changing the class
+if (port == 9){
+	bytes[0] = input.data.CLASS;
+	return {
+    bytes:bytes,
+    fport : port,
+  }
+}
+// Radio setting
+if (port == 10){
+	var radio = (0 << 7) + (0 << 6) + (0 << 5) + (input.data.CLASS << 4) + (input.data.ADR << 3) + input.data.DR; 
+	bytes[0]  = radio;
+	return {
+    bytes:bytes,
+    fport : port,
+  }
+}
+// UL frequency time
+if (port == 11){
+  if (input.data.Unit==1){
+    bytes[0] = 0x80;}
+  else{
+    bytes[0] = 0;}
+  
+  bytes[1] = parseInt(input.data.Time); //dec_to_bho (input.data.Time,'H') ;
+  
+  return {
+    bytes:bytes,
+    fport : port,
+  }
+}
+
+// Time Synchronization Request
+if (port == 13){
+  bytes[0] = input.data.Sync_RTC;
+  return {
+    bytes:bytes,
+    fport : port,
+  }
+}
+
+// Schedulers status setting
+if (port == 21){
+  bytes[0]    = 0x30 + input.data.Sched_status;
+  return {
+    bytes:bytes,
+    fport : port,
+  }
+} 
+// Magnetic control
+if (port == 22){
+  bytes[0]    = 0x30 + input.data.Magnet;
+  return {
+    bytes:bytes,
+    fport : port,
+  }
+}
+// Setting your Counter value
+if (port == 23){
+  var counter = parseInt(input.data.Write, 10) ;
+  byte1   = counter & 0xFF;
+  byte2   = (counter  >> 8 ) & 0xFF ; 
+  byte3   = (counter >> 16 ) & 0xFF ; 
+  byte4   = (counter >> 24 ) & 0xFF ; 
+  
+  bytes[3]  = parseInt(byte1) ;
+  if (byte2 > 0)
+    bytes[2]  = parseInt(byte2); 
+  if (byte3 > 0)
+    bytes[1]  = parseInt(byte3);
+  if (byte4 > 0)
+    bytes[0]  = parseInt(byte4);
+  
+  return {
+    bytes:bytes,
+    fport : port,
+  }
+}
+// Counter value retrieval
+if (port == 24){
+  bytes[0] = 0x30 + input.data.Read;
+  return {
+    bytes:bytes,
+    fport : port,
+  }
+}
+// Partial Opening
+if (port == 27){
+	 
+  percent = parseInt(input.data.Percent, 10) ;
+  if(percent <= 100)
+  {
+    bytes[1] = parseInt(percent);
+  }
+  else
+    bytes[1] = 0x64; // limite to 100%
+  
+  bytes[0] = 0x31;
+  
+  return {
+    bytes:bytes,
+    fport : port,
+  }
+}
+
+// Unsediment Opening
+if (port == 28){
+  percent = parseInt(input.data.Percent, 10) ;
+  if(percent <= 100)
+  {
+    bytes[1] = parseInt(percent);
+  }
+  else
+    bytes[1] = 0x64; // limite to 100%
+  bytes[0] = 0x31;
+  return {
+    bytes:bytes,
+    fport : port,
+  }
+}
+// Scheduler
+if(port == 25) {
+
+/*
+"Alldays":1, 
+"Monday":0,  
+"Tuesday":0, 
+"Wednesday":0, 
+"Thursday":0, 
+"Friday":0, 
+"Saturday":0, 
+"Sunday":0,
+"schl1_h_on":15, 
+"schl1_m_on":20, 
+"schl1_h_off":15,
+"schl1_m_off":30,
+
+"schl2_h_on" 
+"schl2_m_on" 
+"schl2_h_off"
+"schl2_m_off"
+
+"schl3_h_on" 
+"schl3_m_on" 
+"schl3_h_off"
+"schl3_m_off"
+
+"schl4_h_on" 
+"schl4_m_on" 
+"schl4_h_off"
+"schl4_m_off"
+
+*/
+  var day = 0;
+  day = 0 ;
+
+  if (input.data.Alldays == 1 )
+  {
+    day = 0x80;
+  }
+  if(input.data.Sunday==1)
+  {
+    day = day + 0x01;
+  }
+  if(input.data.Monday==1)
+  {
+    day = day + 0x02;
+  }
+  if(input.data.Tuesday==1)
+  {
+    day = day + 0x04;
+  }
+  if(input.data.Wednesday==1)
+  {
+    day = day + 0x08;
+  }
+  if(input.data.Thursday==1)
+  {
+    day = day + 0x10;
+  }
+  if(input.data.Friday==1)
+  {
+    day = day + 0x20;
+  }
+  if(input.data.Saturday==1)
+  {
+    day = day + 0x40;
+  }
+  bytes[0] = day;
+  
+  // Operating Range 1
+  if (input.data.schl1_h_on!=="None" && input.data.schl1_h_on < 24 )
+  {
+    bytes[1]  = 0x80 + parseInt(input.data.schl1_h_on,16); 
+  } 
+  if (input.data.schl1_m_on!=="None" && input.data.schl1_m_on < 60 )
+  {
+    bytes[2]= parseInt(input.data.schl1_m_on,16);
+  }
+  if (input.data.schl1_h_off!=="None" && input.data.schl1_h_off < 24 )
+  {
+    bytes[3] = parseInt(input.data.schl1_h_off,16);
+  }
+  if (input.data.schl1_m_off!=="None" && input.data.schl1_m_off < 60 )
+  {
+    bytes[4]= parseInt(input.data.schl1_m_off,16);
+  }
+  
+  // Operating Range 2
+  if (input.data.schl2_h_on!=="None" && input.data.schl2_h_on < 24 )
+  {
+    bytes[5]  = 0x80 + parseInt(input.data.schl2_h_on,16); 
+  }
+  if (input.data.schl2_m_on!=="None" && input.data.schl2_m_on < 60 )
+  {
+    bytes[6]= parseInt(input.data.schl2_m_on,16);
+  }
+  if (input.data.schl2_h_off!=="None" && input.data.schl2_h_off < 24 )
+  {
+    bytes[7] = parseInt(input.data.schl2_h_off,16);
+  }
+  if (input.data.schl2_m_off!=="None" && input.data.schl2_m_off < 60 )
+  {
+    bytes[8]= parseInt(input.data.schl2_m_off,16);
+  }
+  
+  // Operating Range 3
+  if (input.data.schl3_h_on!=="None" && input.data.schl3_h_on < 24 )
+  {
+    bytes[9]  = 0x80 + parseInt(input.data.schl3_h_on,16); 
+  }
+  if (input.data.schl3_m_on!=="None" && input.data.schl3_m_on < 60 )
+  {
+    bytes[10]= parseInt(input.data.schl3_m_on,16);
+  }
+  if (input.data.schl3_h_off!=="None" && input.data.schl3_h_off < 24 )
+  {
+    bytes[11] = parseInt(input.data.schl3_h_off,16);
+  }
+  if (input.data.schl3_m_off!=="None" && input.data.schl3_m_off < 60 )
+  {
+    bytes[12]= parseInt(input.data.schl3_m_off,16);
+  }
+  
+  // Operating Range 4
+  if (input.data.schl4_h_on!=="None" && input.data.schl4_h_on < 24 )
+  {
+    bytes[13]  = 0x80 + parseInt(input.data.schl4_h_on,16); 
+  }
+  if (input.data.schl4_m_on!=="None" && input.data.schl4_m_on < 60 )
+  {
+    bytes[14]= parseInt(input.data.schl4_m_on,16);
+  }
+  if (input.data.schl4_h_off!=="None" && input.data.schl4_h_off < 24 )
+  {
+    bytes[15] = parseInt(input.data.schl4_h_off,16);
+  }
+  if (input.data.schl4_m_off!=="None" && input.data.schl4_m_off < 60 )
+  {
+    bytes[16]= parseInt(input.data.schl4_m_off,16);
+  }
+
+  return {
+    bytes:bytes,
+    fport : port,
+  }	
+}
+}
+
+
+function decodeDownlink(input) {
+  return {
+    data: {
+      bytes: input.bytes
+    },
+    warnings: [],
+    errors: []
+  }
+}
