@@ -14,9 +14,9 @@ function Decode(fPort, bytes) {
   var batStr ;
   var ACKStr;
   var ACKNum;
-  var AckClass 
-  var AckADR
-  var AckDR 
+  var AckClass; 
+  var AckADR;
+  var AckDR; 
   
   battery  = parseInt(payload.substr(0,3), 16);
   batStr = payload.substr(0,3); 
@@ -137,7 +137,7 @@ function Decode(fPort, bytes) {
 					  Ack_Port : ack_port,
 					  //Status  : status,			
 					  Battery : battery,
-					  Valve   : Valve,
+					  Actuator   : Valve,
 					  Cable   : Cable,
 					  DI_0_LSO    : DI_0,
 					  DI_1_LSC    : DI_1,
@@ -147,7 +147,7 @@ function Decode(fPort, bytes) {
 					  Class   :	AckClass,
 					  ADR   :	AckADR,
 					  DR	:	AckDR,					  
-					  Process : "false",
+					  //Process : "false",
 				  
 			  };
 			break;  
@@ -161,14 +161,14 @@ function Decode(fPort, bytes) {
 					  Ack_Port : ack_port,
 					  //Status  : status,			
 					  Battery : battery,
-					  Valve   : Valve,
+					  Actuator   : Valve,
 					  Cable   : Cable,
 					  DI_0_LSO    : DI_0,
 					  DI_1_LSC    : DI_1,
 					  Class   : clas,
 					  Power   : power,
 					  Counter : counter,
-					  Process : "false",
+					  //Process : "false",
 				  
 			  };
 			break;  
@@ -182,13 +182,13 @@ function Decode(fPort, bytes) {
 					  Ack_Value : ack_val,
 					  //Status  : status,			
 					  Battery : battery,
-					  Valve   : Valve,
+					  Actuator   : Valve,
 					  Cable   : Cable,
 					  DI_0_LSO    : DI_0,
 					  DI_1_LSC    : DI_1,
 					  Class   : clas,
 					  Power   : power,
-					  Process : "false",
+					  //Process : "false",
 				  };
 		}
 	}
@@ -200,13 +200,13 @@ function Decode(fPort, bytes) {
 			  Port    : ports,
 			  //Status  : status,			
 			  Battery : battery,
-			  Valve   : Valve,
+			  Actuator   : Valve,
 			  Cable   : Cable,
 			  DI_0_LSO    : DI_0,
 			  DI_1_LSC    : DI_1,
 			  Class   : clas,
 			  Power   : power,
-			  Process : "true",
+			  //Process : "true",
 		  };
 	}
   
