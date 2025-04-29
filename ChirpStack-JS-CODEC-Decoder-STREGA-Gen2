@@ -1,4 +1,4 @@
-// ChirpStack Decoder for SV2 V1.1 - 24/04/2025
+// ChirpStack Decoder for SV2 V1.2 - 29/04/2025
 function Decode(fPort, bytes) {
   var ports    = fPort;
   
@@ -59,6 +59,12 @@ function Decode(fPort, bytes) {
 			AckClass  = (ack_val >> 4) & 1; 
 			AckADR	= (ack_val >> 3) & 1; 
 			AckDR = ack_val & 7 ; 
+		}
+		else if(ack_port == 1)
+		{
+			ack_val  = parseInt(payload.substr(8,2), 16);
+			if(ack_val == 255)
+				ack_mmtype = "Open/Close Valve TIMEOUT";
 		}
 		else
 		{
