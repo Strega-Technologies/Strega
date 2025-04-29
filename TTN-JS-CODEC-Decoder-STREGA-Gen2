@@ -1,4 +1,4 @@
-// TTI Decoder for SV2 V1.1 - 16/04/2025
+// TTI and TTN Decoder for SV2 V1.2 - 29/04/2025
 
 function decodeUplink(input) {
   var ports = input.fPort;
@@ -62,6 +62,12 @@ function decodeUplink(input) {
 			AckClass  = (ack_val >> 4) & 1; 
 			AckADR	= (ack_val >> 3) & 1; 
 			AckDR = ack_val & 7 ; 
+		}
+		else if(ack_port == 1)
+		{
+			ack_val  = parseInt(payload.substr(8,2), 16);
+			if(ack_val == 255)
+				ack_mmtype = "Open/Close Valve TIMEOUT";
 		}
 		else
 		{
