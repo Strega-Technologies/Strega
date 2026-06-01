@@ -1,0 +1,464 @@
+// ChirpStack v4 Wrapper Entry Points
+// works on ChirpStack MeteoScientific LNS
+// full coedc: decoder and encoder
+function decodeUplink(input) {
+  return {
+    data: Decode(input.fPort, input.bytes)
+  };
+}
+
+function encodeDownlink(input) {
+  // ChirpStack v4 passes the payload object inside input.data.
+  // Since the original Encode function requires an fPort, pass it in your JSON downlink payload 
+  // (e.g., {"fPort": 1, "State": 1}). Defaults to port 1 if not specified.
+  var fPort = input.data.fPort || 1;
+  return {
+    bytes: Encode(fPort, input.data)
+  };
+}
+
+// ChirpStack Decoder for SV2 V1.2 - 29/04/2025
+function Decode(fPort, bytes) {
+  var ports    = fPort;
+  
+  var battery; var Valve; var status; var Cable; 
+  var DI_0; var DI_1; var clas; var power;   
+  var counter  = 0;
+  var ack_port = 0;
+  var ack_val  = 0;
+  var ack_mmtype = "ACK ";
+  var payload  = String.fromCharCode.apply(null, bytes); 
+  var payloadHex  = toHexString(bytes);
+  var str_len = payload.length;
+  var batStr ;
+  var ACKStr;
+  var ACKNum;
+  var AckClass; 
+  var AckADR;
+  var AckDR; 
+  
+  battery  = parseInt(payload.substr(0,3), 16);
+  batStr = payload.substr(0,3); 
+  statusVal = hex2bin(payload.substr(3,2) );
+  statusValStr = payload.substr(3,2);
+  statusValDec = parseInt(payload.substr(3,2), 16);  
+  status = pad(statusVal,8); 
+  clas  = (statusValDec >> 7) & 1;
+  power = (statusValDec >> 6) & 1; 
+  DI_1  = (statusValDec >> 5) & 1; 
+  DI_0  = (statusValDec >> 4) & 1; 
+  Cable	= (statusValDec >> 2) & 3; 
+  Valve = statusValDec & 3 ; 
+  ACKStr = payload.substr(5,1);
+  ACKNum=0;
+  
+  if(str_len > 5){
+	  ACKNum = ACKStr.charCodeAt(0);
+	  if(ACKNum == 6){
+		  
+	    ack_port = parseInt(payload.substr(6,2), 16);
+		ack_mmtype = ack_mmtype + ack_port.toString();
+		
+		
+		if(ack_port == 13)
+		{
+			ack_mmtype = "Date Time Update";
+			ack_val  = parseInt(payload.substr(8,2), 16);
+		}
+		else if(ack_port == 24)
+		{
+			counter  = parseInt(payload.substr(8,str_len-8), 16);
+		}
+		else if(ack_port == 10)
+		{
+			//ack_mmtype = "Date Time Update";
+			ack_val  = parseInt(payload.substr(8,2), 16);
+			
+			//var radio = (0 << 7) + (0 << 6) + (0 << 5) + (obj.CLASS << 4) + (obj.ADR << 3) + obj.DR; 	
+			AckClass  = (ack_val >> 4) & 1; 
+			AckADR	= (ack_val >> 3) & 1; 
+			AckDR = ack_val & 7 ; 
+		}
+		else if(ack_port == 1)
+		{
+			ack_val  = parseInt(payload.substr(8,2), 16);
+			if(ack_val == 255)
+				ack_mmtype = "Open/Close Valve TIMEOUT";
+		}
+		else
+		{
+			ack_val  = parseInt(payload.substr(8,2), 16);
+		}
+		
+	  }
+  }
+  
+	/************************************************/
+	/*	Tools functions								*/
+	/************************************************/
+	function pad(num, len) { 
+	return ("00000000" + num).substr(-len);
+	}
+	function roundToTwo(num) {    
+	return +(Math.round(num + "e+2")  + "e-2");
+	}
+	function dec_to_bho (n, base) {
+	 if (n < 0) {
+	  n = 0xFFFFFFFF + n + 1;
+	 } 
+	switch (base)  
+	{  
+	case 'B':  
+	return parseInt(n, 10).toString(2);
+	break;  
+	case 'H':  
+	return parseInt(n, 10).toString(16);
+	break;  
+	case 'O':  
+	return parseInt(n, 10).toString(8);
+	break;  
+	default:  
+	return("Wrong input.........");  
+	}}
+	function ascii_to_hexa(str)
+	  {
+		var arr1 = [];
+		for (var n = 0, l = str.length; n < l; n ++) 
+		 {
+			var hex = Number(str.charCodeAt(n)).toString(16);
+			arr1.push(hex);
+		 }
+		return arr1.join('');
+	   }
+	function toHexString(bytes) {
+		return bytes.map(function(byte) {
+			return ("00" + (byte & 0xFF).toString(16)).slice(-2);
+		  }).join('');
+	}
+	function hex2bin(hex){
+		return ("00000000" + (parseInt(hex, 16)).toString(2)).substr(-8);
+	}
+	function hex2a(hexx) {
+		var hex = hexx.toString();//force conversion
+		var str = '';
+		for (var i = 0; (i < hex.length && hex.substr(i, 2) !== '00'); i += 2)
+			str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+		return str;
+	}
+	/************************************************/
+	/*	End Tools functions		     				*/
+	/************************************************/
+		
+	if(ACKNum == 6){ // If frame contain ACK byte
+	
+		switch (ack_port)  
+		{  
+			case 10:  // RADIO CONFIGURATION port 10
+				return {
+					  MMType  : ack_mmtype,
+					  Payload : payload,
+					  Port    : ports,
+					  Ack_Port : ack_port,
+					  Battery : battery,
+					  Actuator   : Valve,
+					  Cable   : Cable,
+					  DI_0_LSO    : DI_0,
+					  DI_1_LSC    : DI_1,
+					  Class   : clas,
+					  Power   : power,
+					  Counter : counter,
+					  Class   :	AckClass,
+					  ADR   :	AckADR,
+					  DR	:	AckDR,					  
+			  };
+			break;  
+			
+			case 24:  // Counter reading with port 24
+				return {
+					  MMType  : ack_mmtype,
+					  Payload : payload,
+					  Port    : ports,
+					  Ack_Port : ack_port,
+					  Battery : battery,
+					  Actuator   : Valve,
+					  Cable   : Cable,
+					  DI_0_LSO    : DI_0,
+					  DI_1_LSC    : DI_1,
+					  Class   : clas,
+					  Power   : power,
+					  Counter : counter,
+			  };
+			break;  
+
+			default:  // Other param
+				return {
+					  MMType  : ack_mmtype,
+					  Payload : payload,
+					  Port    : ports,
+					  Ack_Port : ack_port,
+					  Ack_Value : ack_val,
+					  Battery : battery,
+					  Actuator   : Valve,
+					  Cable   : Cable,
+					  DI_0_LSO    : DI_0,
+					  DI_1_LSC    : DI_1,
+					  Class   : clas,
+					  Power   : power,
+				  };
+		}
+	}
+	else 
+	{   // Standard UPLink
+		return {
+			  MMType  : "PERIODIC UpLink",
+			  Payload : payload,
+			  Port    : ports,
+			  Battery : battery,
+			  Actuator   : Valve,
+			  Cable   : Cable,
+			  DI_0_LSO    : DI_0,
+			  DI_1_LSC    : DI_1,
+			  Class   : clas,
+			  Power   : power,
+		  };
+	}
+}
+
+// ChirpStack Encoder for SV2 V1.1 - 24/04/2025
+function Encode(fPort, obj) {
+ function pad0(num, len) { 
+ return ("30" + num).substr(-len);}
+ function pad(num, len) {
+ return ("00" + num).substr(-len);}
+ function pad1(num, len) {
+ return ("000" + num).substr(-len);}
+ function pad2(num, len) {
+ return ("0000" + num).substr(-len);}
+ function pad3(num, len) {
+ return ("000000000000000000000000" + num).substr(-len);}
+ function dec_to_bho (n, base) {
+ if (n < 0) {
+ n = 0xFFFFFFFF + n + 1;}
+switch (base){
+case 'B':
+return parseInt(n, 10).toString(2);
+break;
+case 'H':
+return parseInt(n, 10).toString(16);
+break;
+case 'O':
+return parseInt(n, 10).toString(8);
+break;
+default:
+return("Wrong input.........");}}
+
+ var bytes = [];
+ var ne =[];
+ var ports = fPort;
+ 
+if (ports === 1) {
+ bytes[0]    = 0x30 + obj.State;
+ return bytes;
+}
+if(ports === 2) {
+var Period = parseInt(obj.Period, 10) ;
+var State = parseInt(obj.State, 10) ;
+var byte1;
+var byte2;
+
+if (obj.Second!=="None" && obj.Second=== 1 )
+{
+	byte1 = 0x20 + State;
+}
+else if(obj.Minute!=="None" && obj.Minute===1)
+{
+	byte1 = 0x40 + State;
+}
+else if(obj.Hour!=="None" && obj.Hour===1)
+{
+	byte1 = 0x80 + State;
+}
+
+if (Period > 255) 
+{
+	Period = 255;
+}
+
+bytes[0] = byte1;
+bytes[1] = Period;
+return bytes;
+}
+if (ports === 9){
+	bytes[0] = obj.CLASS;
+	return bytes;
+}
+if (ports === 10){
+	var radio = (0 << 7) + (0 << 6) + (0 << 5) + (obj.CLASS << 4) + (obj.ADR << 3) + obj.DR; 
+	bytes[0]  = radio;
+	return bytes;
+}
+if (ports === 11){
+	if (obj.Unit===1){
+	bytes[0] = 0x80;}
+	else{
+	bytes[0] = 0;}
+	bytes[1] = parseInt(obj.Time);
+return bytes;
+}
+if (ports === 13){
+	bytes[0] = obj.Sync_RTC;
+	return bytes;
+}
+if (ports === 21){
+	bytes[0]    = 0x30 + obj.Sched_status;
+	return bytes;
+} 
+if (ports === 22){
+	bytes[0]    = 0x30 + obj.Magnet;
+	return bytes;
+}
+if (ports === 23){
+	var counter = parseInt(obj.Write, 10) ;
+	var byte1   = counter & 0xFF;
+	var byte2   = (counter  >> 8 ) & 0xFF ; 
+	var byte3   = (counter >> 16 ) & 0xFF ; 
+	var byte4   = (counter >> 24 ) & 0xFF ; 
+
+	bytes[3]    = parseInt(byte1) ;
+	if (byte2 > 0)
+		bytes[2]    = parseInt(byte2); 
+	if (byte3 > 0)
+		bytes[1]    = parseInt(byte3);
+	if (byte4 > 0)
+		bytes[0]    = parseInt(byte4);
+	return bytes;
+}
+if (ports === 24){
+	bytes[0]    = 0x30 + obj.Read;
+	return bytes;
+}
+if (ports === 27){
+	var percent = parseInt(obj.Percent, 10) ;
+	if(percent <= 100)
+	{
+		bytes[1] = parseInt(percent);
+	}
+	else
+		bytes[1] = 0x64;
+	bytes[0] = 0x31;
+	return bytes;
+}
+if (ports === 28){
+	var percent = parseInt(obj.Percent, 10) ;
+	if(percent <= 100)
+	{
+		bytes[1] = parseInt(percent);
+	}
+	else
+		bytes[1] = 0x64;
+	bytes[0] = 0x31;
+	return bytes;
+}
+if(ports === 25) {
+	var day = 0;
+	if (obj.Alldays === 1 )
+	{
+		day = 0x80;
+	}
+	if(obj.Sunday===1)
+	{
+		day = day + 0x01;
+	}
+	if(obj.Monday===1)
+	{
+		day = day + 0x02;
+	}
+	if(obj.Tuesday===1)
+	{
+		day = day + 0x04;
+	}
+	if(obj.Wednesday===1)
+	{
+		day = day + 0x08;
+	}
+	if(obj.Thursday===1)
+	{
+		day = day + 0x10;
+	}
+	if(obj.Friday===1)
+	{
+		day = day + 0x20;
+	}
+	if(obj.Saturday===1)
+	{
+		day = day + 0x40;
+	}
+	bytes[0] = day;
+
+	if (obj.schl1_h_on!=="None" && obj.schl1_h_on < 24 )
+	{
+		bytes[1]  = 0x80 + parseInt(obj.schl1_h_on,16); 
+	} 
+	if (obj.schl1_m_on!=="None" && obj.schl1_m_on < 60 )
+	{
+		bytes[2]= parseInt(obj.schl1_m_on,16);
+	}
+	if (obj.schl1_h_off!=="None" && obj.schl1_h_off < 24 )
+	{
+		bytes[3] = parseInt(obj.schl1_h_off,16);
+	}
+	if (obj.schl1_m_off!=="None" && obj.schl1_m_off < 60 )
+	{
+		bytes[4]= parseInt(obj.schl1_m_off,16);
+	}
+	if (obj.schl2_h_on!=="None" && obj.schl2_h_on < 24 )
+	{
+		bytes[5]  = 0x80 + parseInt(obj.schl2_h_on,16); 
+	}
+	if (obj.schl2_m_on!=="None" && obj.schl2_m_on < 60 )
+	{
+		bytes[6]= parseInt(obj.schl2_m_on,16);
+	}
+	if (obj.schl2_h_off!=="None" && obj.schl2_h_off < 24 )
+	{
+		bytes[7] = parseInt(obj.schl2_h_off,16);
+	}
+	if (obj.schl2_m_off!=="None" && obj.schl2_m_off < 60 )
+	{
+		bytes[8]= parseInt(obj.schl2_m_off,16);
+	}
+	if (obj.schl3_h_on!=="None" && obj.schl3_h_on < 24 )
+	{
+		bytes[9]  = 0x80 + parseInt(obj.schl3_h_on,16); 
+	}
+	if (obj.schl3_m_on!=="None" && obj.schl3_m_on < 60 )
+	{
+		bytes[10]= parseInt(obj.schl3_m_on,16);
+	}
+	if (obj.schl3_h_off!=="None" && obj.schl3_h_off < 24 )
+	{
+		bytes[11] = parseInt(obj.schl3_h_off,16);
+	}
+	if (obj.schl3_m_off!=="None" && obj.schl3_m_off < 60 )
+	{
+		bytes[12]= parseInt(obj.schl3_m_off,16);
+	}
+	if (obj.schl4_h_on!=="None" && obj.schl4_h_on < 24 )
+	{
+		bytes[13]  = 0x80 + parseInt(obj.schl4_h_on,16); 
+	}
+	if (obj.schl4_m_on!=="None" && obj.schl4_m_on < 60 )
+	{
+		bytes[14]= parseInt(obj.schl4_m_on,16);
+	}
+	if (obj.schl4_h_off!=="None" && obj.schl4_h_off < 24 )
+	{
+		bytes[15] = parseInt(obj.schl4_h_off,16);
+	}
+	if (obj.schl4_m_off!=="None" && obj.schl4_m_off < 60 )
+	{
+		bytes[16]= parseInt(obj.schl4_m_off,16);
+	}
+	return bytes;
+}
+}
